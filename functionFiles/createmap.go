@@ -11,7 +11,8 @@ import (
 func CreateMap(fileName string) (map[rune][]string, error) {
 	// Open and read a file specified by the given file path(s), creating an ASCII art map.
 	// Check if the file exists
-	file, err := os.Open(fileName)
+	fileString := fmt.Sprintf("%s%s",fileName,".txt")
+	file, err := os.Open(fileString)
 	if err != nil {
 		if os.IsNotExist(err) {
 			fmt.Println("File does not exist:", fileName)
@@ -21,7 +22,6 @@ func CreateMap(fileName string) (map[rune][]string, error) {
 		return nil, err
 	}
 	defer file.Close()
-	// Check for empty file
 	scanner := bufio.NewScanner(file)
 	lines := []string{}
 	for scanner.Scan() {
@@ -33,7 +33,6 @@ func CreateMap(fileName string) (map[rune][]string, error) {
 			data = append(data, byte(value2))
 		}
 	}
-	// ensure the file is not modified
 	crc32Table := crc32.MakeTable(crc32.IEEE)
 	checksum := crc32.Checksum(data, crc32Table)
 	if !(checksum == 0x9ffd59bc || checksum == 0x2f465361 || checksum == 0x6ee86a07) {
@@ -44,11 +43,12 @@ func CreateMap(fileName string) (map[rune][]string, error) {
 		return nil, err
 	}
 	// Validate the file path and checks for empty files or non-text file extensions.
-	if filepath.Ext(fileName) != ".txt" {
+	if filepath.Ext(fileString) != ".txt" {
 		fmt.Println("Wrong extension, use .txt")
 		return nil, err
 	}
-
+	// Parse the file line by line, constructing the ASCII art map.
+	// Uses a map where the key is the ASCII character (rune) and the value is a slice of strings representing the lines of the ASCII art.
 	characterMap := make(map[rune][]string)
 	var currentChar rune = ' '
 	for _, line := range lines {
@@ -61,5 +61,6 @@ func CreateMap(fileName string) (map[rune][]string, error) {
 		}
 		characterMap[currentChar] = append(characterMap[currentChar], line)
 	}
+	// Returns the constructed map or an error if any occurs during file operations or map creation.
 	return characterMap, nil
 }
